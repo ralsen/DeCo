@@ -3,10 +3,13 @@ Shelly Registry (YAML)
 =====================
 
 - Discover Shelly devices via mDNS
-- Identify devices by stable device name / ID
-- Track IP changes
-- Detect new and vanished devices
-- Persist state to YAML
+- Stable device identity (device ID / name)
+- Honest data model:
+    * family   = physical product (model)
+    * role     = configured operating mode (type)
+    * category = optional heuristic grouping
+- Persist all available device information
+- Track presence state
 """
 
 from zeroconf import Zeroconf, ServiceBrowser, ServiceListener
@@ -19,12 +22,16 @@ from pathlib import Path
 
 
 # ---------------------------------------------------------------------------
+# Konfiguration
+# ---------------------------------------------------------------------------
 
 REGISTRY_FILE = Path("shelly_registry.yml")
-DISCOVERY_TIME = 5.0
-HTTP_TIMEOUT = 2.0
+DISCOVERY_TIME = 5.0      # Sekunden für mDNS-Sammlung
+HTTP_TIMEOUT = 2.0       # HTTP-Timeout pro Gerät
 
 
+# ---------------------------------------------------------------------------
+# mDNS Listener
 # ---------------------------------------------------------------------------
 
 class ShellyListener(ServiceListener):
@@ -52,21 +59,72 @@ class ShellyListener(ServiceListener):
 
 
 # ---------------------------------------------------------------------------
+# Ehrliche Ableitungen
+# ---------------------------------------------------------------------------
 
-def _query_shelly(ip):
+def get_family(data: dict) -> str:
+    """Physisches Produkt (stabil)"""
+    return data.get("model") or "Unknown"
+
+
+def get_role(data: dict) -> str:
+    """Aktuelle Betriebsart (konfigurationsabhängig)"""
+    return data.get("type") or "Unknown"
+
+
+def derive_category(data: dict) -> str:
+    """
+    Optionale Gruppierung.
+    Darf 'Unknown' sein – keine Garantie!
+    """
+    model = (data.get("model") or "").upper()
+    role = (data.get("type") or "").upper()
+
+    if role == "COVER":
+        return "Cover"
+
+    if "PLUG" in model:
+        return "Plug"
+
+    if "EM" in model:
+        return "EM"
+
+    if model.startswith("SHELLYPRO"):
+        return "Pro"
+
+    return "Unknown"
+
+
+# ---------------------------------------------------------------------------
+# Einzelgerät abfragen
+# ---------------------------------------------------------------------------
+
+def _query_shelly(ip: str):
     try:
         r = requests.get(f"http://{ip}/shelly", timeout=HTTP_TIMEOUT)
         r.raise_for_status()
         data = r.json()
 
-        name = data.get("name") or data.get("id")
-        if not name:
+        device_id = data.get("name") or data.get("id")
+        if not device_id:
             return None
 
-        return name, {
+        now = datetime.now().isoformat(timespec="seconds")
+
+        return device_id, {
+            "id": data.get("id"),
+            "name": data.get("name"),
+            "model": data.get("model"),
+            "family": get_family(data),
+            "role": get_role(data),
+            "category": derive_category(data),
+            "mac": data.get("mac"),
             "ip": ip,
             "protocol_version": data.get("gen"),
-            "last_seen": datetime.now().isoformat(timespec="seconds"),
+            "firmware": data.get("ver"),
+            "firmware_id": data.get("fw_id"),
+            "present": True,
+            "last_seen": now,
         }
 
     except Exception:
@@ -74,8 +132,10 @@ def _query_shelly(ip):
 
 
 # ---------------------------------------------------------------------------
+# Discovery
+# ---------------------------------------------------------------------------
 
-def discover_devices():
+def discover_devices() -> dict:
     zeroconf = Zeroconf()
     listener = ShellyListener()
 
@@ -88,15 +148,17 @@ def discover_devices():
     for ip in listener.ips:
         result = _query_shelly(ip)
         if result:
-            name, data = result
-            found[name] = data
+            device_id, data = result
+            found[device_id] = data
 
     return found
 
 
 # ---------------------------------------------------------------------------
+# Registry I/O
+# ---------------------------------------------------------------------------
 
-def load_registry():
+def load_registry() -> dict:
     if REGISTRY_FILE.exists():
         with REGISTRY_FILE.open("r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
@@ -104,7 +166,7 @@ def load_registry():
     return {}
 
 
-def save_registry(registry):
+def save_registry(registry: dict) -> None:
     with REGISTRY_FILE.open("w", encoding="utf-8") as f:
         yaml.safe_dump(
             registry,
@@ -115,59 +177,49 @@ def save_registry(registry):
 
 
 # ---------------------------------------------------------------------------
+# Registry Update
+# ---------------------------------------------------------------------------
 
-def update_registry():
+def update_registry() -> dict:
     previous = load_registry()
     current = discover_devices()
 
-    new_devices = {}
-    vanished_devices = {}
-    ip_changes = {}
+    updated = previous.copy()
 
-    for name, data in current.items():
-        if name not in previous:
-            new_devices[name] = data
+    # alle bekannten Geräte zunächst als nicht präsent markieren
+    for dev in updated.values():
+        dev["present"] = False
+
+    # aktuelle Geräte einpflegen
+    for device_id, data in current.items():
+        if device_id not in updated:
+            updated[device_id] = data
         else:
-            old_ip = previous[name].get("ip")
-            if old_ip != data["ip"]:
-                ip_changes[name] = {
-                    "old": old_ip,
-                    "new": data["ip"]
-                }
+            updated[device_id].update(data)
 
-    for name in previous:
-        if name not in current:
-            vanished_devices[name] = previous[name]
+        updated[device_id]["present"] = True
+        updated[device_id]["last_seen"] = data["last_seen"]
 
-    updated_registry = previous.copy()
-    updated_registry.update(current)
-
-    save_registry(updated_registry)
-
-    return {
-        "new": new_devices,
-        "vanished": vanished_devices,
-        "ip_changed": ip_changes,
-        "registry": updated_registry,
-    }
+    save_registry(updated)
+    return updated
 
 
 # ---------------------------------------------------------------------------
+# Testlauf
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    result = update_registry()
+    registry = update_registry()
 
-    if result["new"]:
-        print("Neue Geräte:")
-        for name in result["new"]:
-            print(f"  + {name}")
-
-    if result["ip_changed"]:
-        print("IP-Änderungen:")
-        for name, change in result["ip_changed"].items():
-            print(f"  * {name}: {change['old']} → {change['new']}")
-
-    if result["vanished"]:
-        print("Nicht erreichbar:")
-        for name in result["vanished"]:
-            print(f"  - {name}")
+    for name, dev in registry.items():
+        state = "online" if dev["present"] else "offline"
+        print(
+            f"{name:35} "
+            f"{state:7} "
+            f"{dev['family']:20} "
+            f"{dev['role']:8} "
+            f"{dev['category']}"
+        )
+        
+# state (online) ist scheinbar nicht für jedes gerät sondern "ein" globaler zustand        
+# role und category sind immer "unknown"
