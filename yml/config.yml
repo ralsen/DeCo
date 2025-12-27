@@ -1,0 +1,38 @@
+pathes:
+    DATA: '/data'                 # not used yet
+    LOG: '/log'
+    RRD: '/rrd'
+    YML: '/yml'
+    PNG: '/png'
+    ARCH: '/archiv'
+    PROG: '/prog'
+    HTML: '/html'
+    
+Communication:
+    DaboServerName: 'Server64.local'    
+    DaboServerPort: 8088
+
+
+suffixes:
+    log: # '-%Y_%m_%d__%H-%M-%S'     #date and time
+         '-%Y_%m_%d'                #date only
+         #''                         # hostname only
+    data: '-%Y_%m_%d__%H-%M-%S'     #date and time
+          #'-%Y_%m_%d'               #date only
+          #''                        #without date and time
+
+debug:
+    datefmt: '%d.%m.%Y %H:%M:%S'      # normal
+    #datefmt: '%d.%m.%Y %H:%M:%S.%s'   # fine (with ms)
+    hirestime: False                    # time resolution in data logs (true=ms, false=s)
+    humanTimestamp: True
+    logYML: True                      #put the yml-file into the log
+    verbose: True
+    Mailing: True
+
+files:
+    DATASTORE_YML: 'devdata.yml'
+    DIAGRAMS_YML: 'diagrams.yml'
+
+devices: devs.yml
+    

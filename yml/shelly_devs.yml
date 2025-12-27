@@ -1,0 +1,48 @@
+NeuesTeil_AA_BB_CC_DD_EE_FF:
+    Hardware: Shelly
+    Type: SHSWT
+    name: neues_Teil
+    time: 3
+    format: text
+    infoURL: Info
+    retry: 3
+    rrd: rrd-file.rrd           # if omitted rrd = devicename.rrd
+    Diagram: some_definitons    # tbd, if omitted no diagrams will be done
+    modul: Switch
+
+ShellyPlus1-E465B8F0F750:
+    Hardware: Shelly
+    Type: SNSW-001X16EU
+    name: Gartenlampe
+    time: 5
+    format: json
+    infoURL: rpc/Shelly.GetDeviceInfo
+    retry: 3
+    rrd: rrd-file.rrd           # if omitted rrd = devicename.rrd
+    Diagram: some_definitons    # tbd, if omitted no diagrams will be done
+    modul: SNSW-001X16EU
+
+shellyplug-083A8DF437C7:
+    Hardware: Shelly
+    Type: SHPLG2-1
+    name: Solar
+    time: 6
+    format: json
+    infoURL: settings
+    retry: 3
+    rrd: rrd-file.rrd           # if omitted rrd = devicename.rrd
+    Diagram: some_definitons    # tbd, if omitted no diagrams will be done
+    modul: SHPLG2-1
+    
+ShellyPMMiniG3-DCDA0CB60CD0:
+    Hardware: Shelly
+    Type: S3PM-001PCEU16
+    name: Solar-Power
+    time: 7
+    format: json
+    infoURL: rpc/Shelly.GetDeviceInfo
+    retry: 3
+    rrd: rrd-file.rrd           # if omitted rrd = devicename.rrd
+    Diagram: some_definitons    # tbd, if omitted no diagrams will be done
+    modul: S3PM-001PCEU16
+

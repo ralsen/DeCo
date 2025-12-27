@@ -1,0 +1,108 @@
+# https://shelly-api-docs.shelly.cloud
+
+# -----------------------------------------------
+# new device definitions
+# -----------------------------------------------
+shellyplug-083A8DF437C7:
+    Type:       SHPLG2-1
+    Name:       Solar
+    Hostname:   hostname
+    Cycle:      10
+    Retry:      3
+    ServerName: Server64
+    ServerPort: 8080
+
+shellypmminig3-dcda0cb60cd0:
+    Type:       S3PM-001PCEU16
+    Name:       Solar-Power
+    Hostname:   hostname
+    Cycle:      50
+    Retry:      3
+    ServerName: Testpi
+    ServerPort: 8080
+
+shellyplus1-e465b8f0f750:
+    Type:       SNSW-001X16EU
+    Name:       Gartenlampe
+    Hostname:   hostname
+    Cycle:      60
+    Retry:      3
+    ServerName: Testpi
+    ServerPort: 8080
+
+shellyplus1-d0ef76d9aaac:
+    Type:       SNSW-001X16EU
+    Name:       Schuppen
+    Hostname:   hostname
+    Cycle:      70
+    Retry:      3
+    ServerName: Testpi
+    ServerPort: 8080
+
+shellyplusplugs-d48afc7bb89c:
+    Type:       S3PM-001PCEU16
+    Name:       Schuppen
+    Hostname:   hostname
+    Cycle:      80
+    Retry:      3
+    ServerName: Testpi
+    ServerPort: 8080
+
+shellyplus1-b0a7324cbbd4:
+    Type:       SNSW-001X16EU
+    Name:       name
+    Hostname:   hostname
+    Cycle:      90
+    Retry:      3
+    ServerName: Testpi
+    ServerPort: 8080
+
+shellypstripg4-98a3167b61a0:
+    Type:       S4PL-00416EU
+    name:       Aquarium
+    Cycle:      3
+    Retry:      3
+    ServerName: Testpi
+    ServerPort: 8080
+
+    
+
+# -----------------------------------------------
+# new device definitions as prototypes
+# -----------------------------------------------
+S4PL-00416EU:
+    Hardware: Shelly
+    Protocol: 'Gen 2'
+    InfoURL:
+        - ["/rpc/Switch.GetStatus?id=0", "noch wat"]
+        - ["/rpc/Switch.GetStatus?id=1", "noch wat"]
+        - ["/rpc/Switch.GetStatus?id=2", "noch wat"]
+        - ["/rpc/Switch.GetStatus?id=3", "noch wat"]
+
+
+SNSW-001X16EU:
+    Hardware: Shelly
+    Protocol: 'Gen 2'
+    InfoURL: ['rpc/Shelly.GetDeviceInfo']
+
+S3PM-001PCEU16:
+    Hardware: Shelly
+    Protocol: 'Gen 2'
+    InfoURL: ['rpc/Shelly.GetDeviceInfo']
+
+SHPLG2-1:
+    Hardware: Shelly
+    Protocol: 'Gen 1'
+    InfoURL:    
+        power: meter/0
+        counters: meter/0
+        total: meter/0
+        device:
+            type: settings
+            hostname: settings
+            mac: settings
+
+SNPL-00112EU:
+    Hardware: Shelly
+    Protocol: 'Gen 2'
+    InfoURL: ['rpc/Shelly.GetDeviceInfo']

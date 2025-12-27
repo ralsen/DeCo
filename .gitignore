@@ -1,0 +1,17 @@
+png/
+docs/
+log/
+data/
+venv/
+env/
+.vscode
+node_modules/
+__pycache__/
+*.log
+*.pyc
+*.zip
+*.rrd
+*.json
+._*
+.DS*
+
