@@ -17,9 +17,13 @@ import logging
 import yaml
 import os
 from datetime import datetime
-from pathlib import Path
+from pprint import pprint
+
 
 import config
+from ShellyPlus4PM import ShellyPlus4PM
+from ShellyPlus1 import ShellyPlus1
+from ShellyPlusPlug import ShellyPlusPlug
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +59,7 @@ class ShellyListener(ServiceListener):
         with self._lock:
             ip = addresses[0]
             self.ips.add(ip)
-            logger.debug("mDNS found Shelly at %s (%s)", ip, name)
+            logger.info("mDNS found Shelly at %s (%s)", ip, name)
 
     def update_service(self, zeroconf, service_type, name):
         pass
@@ -183,7 +187,7 @@ def discover_devices() -> dict:
             device_id, data = result
             found[device_id] = data
 
-    logger.debug("Discovery complete: %d devices", len(found))
+    logger.info("Discovery complete: %d devices found.", len(found))
     return found
 
 
@@ -253,11 +257,11 @@ if __name__ == "__main__":
 
     cfg = config.InitManager(current_file_name).ini
 
+    registry = update_registry()
+
     print("                                    Shelly discovery scan")
     print("Name                                State   Model                Capabilities             Category")
     print("--------------------------------------------------------------------------------------------------")
-
-    registry = update_registry()
 
     for name, dev in registry.items():
         state = "online" if dev["present"] else "offline"
@@ -270,4 +274,14 @@ if __name__ == "__main__":
             f"{dev.get('category')}"
         )
         
+    shelly = ShellyPlus4PM("192.168.2.46")
+    data = shelly.read_all()
+    pprint(data)
 
+    shelly1 = ShellyPlus1("192.168.2.47")
+    data1 = shelly1.read_all()
+    pprint(data1)
+    
+    shelly2 = ShellyPlusPlug("192.168.2.50")
+    data2 = shelly2.read_all()
+    pprint(data)
