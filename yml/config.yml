@@ -1,3 +1,17 @@
+misc:
+    humanTimestamp: True
+    test_webserver: False
+    do_graphics: True
+    loglevel: 'DEBUG'  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    
+Timers:
+    SystemMonitorSleep: 10
+    _ETH_MonitorSleep: 10
+    _SDX_MonitorSleep: 10
+    _CPU_MonitorSleep: 10
+    getWeatherInterval: 900
+    mainloop_sleep: 150
+
 pathes:
     DATA: '/data'                 # not used yet
     LOG: '/log'
@@ -5,13 +19,41 @@ pathes:
     YML: '/yml'
     PNG: '/png'
     ARCH: '/archiv'
+    SCENE: '/Scenes'
     PROG: '/prog'
     HTML: '/html'
-    
-Communication:
-    DaboServerName: 'Server64.local'    
-    DaboServerPort: 8088
+    IPAdr: '/IPAdr'
+    REG: '/yml/shelly_registry.yml'
 
+DeSeTask:
+    Linux:
+    #- ['./UpdMemoryRrd.sh', 1]
+    #- ['./UpdLoadAvgRrd.sh', 1]
+    #- ['./UpdNetworkRrd.sh', 1]
+    #- ['./UpdCoreTempRrd.sh', 1]
+    #- ['./UpdDiskTraf.sh', 1]
+    #- ['./MakeAllGraphs.sh', 20]
+
+    Darwin:
+    #- ['/Users/ralphfollrichs/Projects/dabo/progs/UpdAllMac.sh', 5]
+    - ['/Users/ralphfollrichs/Projects/dabo/progs/allMac.sh', 60]
+
+    Windows:
+    - ['/Users/ralphfollrichs/Projects/dabo/progs/UpdAll.sh', 1]
+    - ['/Users/ralphfollrichs/Projects/dabo/progs/all.sh', 1800]
+
+Communication:
+    DevServerName: 'Server64.local'    
+    DevServerPort: 8080
+    DaBoServerPort: 8088
+
+DevServer:
+    Timers:
+        MonitoringSleep: 1
+
+files:
+    DATASTORE_YML: 'datastore.yml'
+    DIAGRAMS_YML: 'diagrams.yml'
 
 suffixes:
     log: # '-%Y_%m_%d__%H-%M-%S'     #date and time
@@ -30,9 +72,6 @@ debug:
     verbose: True
     Mailing: True
 
-files:
-    DATASTORE_YML: 'devdata.yml'
-    DIAGRAMS_YML: 'diagrams.yml'
-
-devices: devs.yml
+devices:
     
+archive:

@@ -15,25 +15,19 @@ import threading
 import time
 import logging
 import yaml
+import os
 from datetime import datetime
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Logging
-# ---------------------------------------------------------------------------
+import config
 
-logging.basicConfig(
-    level=logging.DEBUG,   # auf DEBUG setzen, wenn nötig
-    format="%(asctime)s %(levelname)-7s %(message)s",
-)
-
-log = logging.getLogger("shelly.registry")
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Konfiguration
 # ---------------------------------------------------------------------------
 
-REGISTRY_FILE = Path("shelly_registry.yml")
+#cfg['REGFile'] = Path("shelly_registry.yml")
 DISCOVERY_TIME = 5.0      # Sekunden für mDNS-Sammlung
 HTTP_TIMEOUT = 2.0       # HTTP-Timeout pro Gerät
 
@@ -50,18 +44,18 @@ class ShellyListener(ServiceListener):
     def add_service(self, zeroconf, service_type, name):
         info = zeroconf.get_service_info(service_type, name)
         if not info:
-            log.debug("mDNS service without info: %s", name)
+            logger.debug("mDNS service without info: %s", name)
             return
 
         addresses = info.parsed_addresses()
         if not addresses:
-            log.debug("mDNS service without address: %s", name)
+            logger.debug("mDNS service without address: %s", name)
             return
 
         with self._lock:
             ip = addresses[0]
             self.ips.add(ip)
-            log.debug("mDNS found Shelly at %s (%s)", ip, name)
+            logger.debug("mDNS found Shelly at %s (%s)", ip, name)
 
     def update_service(self, zeroconf, service_type, name):
         pass
@@ -81,10 +75,10 @@ def _has_rpc(ip: str, method: str) -> bool:
             json={},
             timeout=HTTP_TIMEOUT
         )
-        log.debug("RPC %s on %s -> %s", method, ip, r.status_code)        
+        logger.debug("RPC %s on %s -> %s", method, ip, r.status_code)        
         return r.status_code == 200
     except Exception as exc:
-        log.debug("RPC %s on %s failed: %s", method, ip, exc)        
+        logger.debug("RPC %s on %s failed: %s", method, ip, exc)        
         return False
 
 
@@ -108,7 +102,7 @@ def detect_capabilities(ip: str) -> list[str]:
         
     else:
         caps.append("generic")
-    log.debug("Capabilities for %s: %s", ip, caps)
+    logger.debug("Capabilities for %s: %s", ip, caps)
     return caps
 
 
@@ -132,7 +126,7 @@ def derive_category_from_caps(caps: list[str]) -> str:
 
 def _query_shelly(ip: str):
     try:
-        log.debug("Query Shelly at %s", ip)
+        logger.debug("Query Shelly at %s", ip)
         
         r = requests.get(f"http://{ip}/shelly", timeout=HTTP_TIMEOUT)
         r.raise_for_status()
@@ -140,7 +134,7 @@ def _query_shelly(ip: str):
 
         device_id = data.get("name") or data.get("id")
         if not device_id:
-            log.warning("Shelly at %s returned no id/name", ip)
+            logger.warning("Shelly at %s returned no id/name", ip)
             return None
 
         now = datetime.now().isoformat(timespec="seconds")
@@ -163,7 +157,7 @@ def _query_shelly(ip: str):
         }
 
     except Exception as exc:
-        log.warning("Failed to query Shelly at %s: %s", ip, exc)
+        logger.warning("Failed to query Shelly at %s: %s", ip, exc)
         return None
 
 
@@ -172,7 +166,7 @@ def _query_shelly(ip: str):
 # ---------------------------------------------------------------------------
 
 def discover_devices() -> dict:
-    log.debug("Starting mDNS discovery")
+    logger.debug("Starting mDNS discovery")
 
     zeroconf = Zeroconf()
     listener = ShellyListener()
@@ -189,7 +183,7 @@ def discover_devices() -> dict:
             device_id, data = result
             found[device_id] = data
 
-    log.debug("Discovery complete: %d devices", len(found))
+    logger.debug("Discovery complete: %d devices", len(found))
     return found
 
 
@@ -198,20 +192,20 @@ def discover_devices() -> dict:
 # ---------------------------------------------------------------------------
 
 def load_registry() -> dict:
-    if REGISTRY_FILE.exists():
+    if cfg['REGFile'].exists():
         try:
-            with REGISTRY_FILE.open("r", encoding="utf-8") as f:
+            with cfg['REGFile'].open("r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 return data if isinstance(data, dict) else {}
         except Exception as exc:
-            log.error("Failed to load registry: %s", exc)
+            logger.error("Failed to load registry: %s", exc)
             return {}
     return {}
 
 
 def save_registry(registry: dict) -> None:
     try:
-        with REGISTRY_FILE.open("w", encoding="utf-8") as f:
+        with cfg['REGFile'].open("w", encoding="utf-8") as f:
             yaml.safe_dump(
                 registry,
                 f,
@@ -219,7 +213,7 @@ def save_registry(registry: dict) -> None:
                 default_flow_style=False
             )
     except Exception as exc:
-        log.error("Failed to save registry: %s", exc)
+        logger.error("Failed to save registry: %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -238,7 +232,7 @@ def update_registry() -> dict:
     for device_id, data in current.items():
         if device_id not in updated:
             updated[device_id] = data
-            log.debug("New device discovered: %s", device_id)
+            logger.debug("New device discovered: %s", device_id)
         else:
             updated[device_id].update(data)
 
@@ -254,6 +248,11 @@ def update_registry() -> dict:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    current_file_path = os.path.realpath(__file__)
+    current_file_name = os.path.basename(current_file_path)
+
+    cfg = config.InitManager(current_file_name).ini
+
     print("                                    Shelly discovery scan")
     print("Name                                State   Model                Capabilities             Category")
     print("--------------------------------------------------------------------------------------------------")
