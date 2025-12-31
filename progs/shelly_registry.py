@@ -26,6 +26,8 @@ from ShellyPlus1 import ShellyPlus1
 from ShellyPlusPlug import ShellyPlusPlug
 
 logger = logging.getLogger(__name__)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+
 
 # ---------------------------------------------------------------------------
 # Konfiguration
@@ -47,19 +49,20 @@ class ShellyListener(ServiceListener):
 
     def add_service(self, zeroconf, service_type, name):
         info = zeroconf.get_service_info(service_type, name)
-        if not info:
-            logger.debug("mDNS service without info: %s", name)
-            return
+        if info and "shelly" in name.lower():
+            if not info:
+                logger.debug("mDNS service without info: %s", name)
+                return
 
-        addresses = info.parsed_addresses()
-        if not addresses:
-            logger.debug("mDNS service without address: %s", name)
-            return
+            addresses = info.parsed_addresses()
+            if not addresses:
+                logger.debug("mDNS service without address: %s", name)
+                return
 
-        with self._lock:
-            ip = addresses[0]
-            self.ips.add(ip)
-            logger.info("mDNS found Shelly at %s (%s)", ip, name)
+            with self._lock:
+                ip = addresses[0]
+                self.ips.add(ip)
+                logger.info("mDNS found Shelly at %s (%s)", ip, name)
 
     def update_service(self, zeroconf, service_type, name):
         pass
@@ -175,7 +178,7 @@ def discover_devices() -> dict:
     zeroconf = Zeroconf()
     listener = ShellyListener()
 
-    ServiceBrowser(zeroconf, "_shelly._tcp.local.", listener)
+    ServiceBrowser(zeroconf, "_http._tcp.local.", listener)
     time.sleep(DISCOVERY_TIME)
     zeroconf.close()
 
@@ -276,12 +279,12 @@ if __name__ == "__main__":
         
     shelly = ShellyPlus4PM("192.168.2.46")
     data = shelly.read_all()
-    pprint(data)
+    #pprint(data)
 
     shelly1 = ShellyPlus1("192.168.2.47")
     data1 = shelly1.read_all()
-    pprint(data1)
+    #pprint(data1)
     
     shelly2 = ShellyPlusPlug("192.168.2.50")
     data2 = shelly2.read_all()
-    pprint(data)
+    #pprint(data)
