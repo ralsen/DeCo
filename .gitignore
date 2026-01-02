@@ -15,5 +15,5 @@ __pycache__/
 ._*
 .DS*
 *.code-workspace
-shelly_registry.yml
+yml/shelly_registry.yml
 
