@@ -3,11 +3,14 @@ import requests
 import json
 import time
 from datetime import datetime
+from pprint import pprint
 
 
 from datetime import datetime 
 
 logger = logging.getLogger(__name__)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+
 
 # ---------------------------------------------------------------------------
 # Konfiguration
@@ -39,7 +42,6 @@ class ShellyHandler():
 
             now = datetime.now().isoformat(timespec="seconds")
             caps = self.detect_capabilities(ip)
-            caps = "capas"
             return device_id, {
                 "id": data.get("id"),
                 "name": data.get("name"),
@@ -51,7 +53,7 @@ class ShellyHandler():
                 "firmware": data.get("ver"),
                 "firmware_id": data.get("fw_id"),
                 "capabilities": caps,
-                #"category": self.derive_category_from_caps(caps),
+                "category": self.derive_category_from_caps(caps),
                 "present": True,
                 "last_seen": now,
             }
