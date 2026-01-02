@@ -1,58 +1,50 @@
 shellyplus1-b0a7324cbbd4:
-  capabilities:
-  - generic
-  category: Generic
+  capabilities: capas
   firmware: 1.7.1
   firmware_id: 20250924-062720/1.7.1-gd336f31
   gen: 2
   id: shellyplus1-b0a7324cbbd4
   ip: 192.168.2.47
-  last_seen: '2025-12-31T12:01:41'
+  last_seen: '2026-01-02T17:43:33'
   mac: B0A7324CBBD4
   model: SNSW-001X16EU
   name: null
   present: true
   protocol_version: 2
 shellyplus1-e465b8f0f750:
-  capabilities:
-  - generic
-  category: Generic
+  capabilities: capas
   firmware: 1.7.1
   firmware_id: 20250924-062720/1.7.1-gd336f31
   gen: 2
   id: shellyplus1-e465b8f0f750
   ip: 192.168.2.49
-  last_seen: '2025-12-31T12:01:40'
+  last_seen: '2026-01-02T17:44:25'
   mac: E465B8F0F750
   model: SNSW-001X16EU
   name: null
   present: true
   protocol_version: 2
 shellyplusplugs-d48afc7bb89c:
-  capabilities:
-  - generic
-  category: Generic
+  capabilities: capas
   firmware: 1.7.1
   firmware_id: 20250924-062721/1.7.1-gd336f31
   gen: 2
   id: shellyplusplugs-d48afc7bb89c
   ip: 192.168.2.50
-  last_seen: '2025-12-31T12:01:40'
+  last_seen: '2026-01-02T17:44:23'
   mac: D48AFC7BB89C
   model: SNPL-00112EU
   name: null
   present: true
   protocol_version: 2
 shellypstripg4-98a3167b61a0:
-  capabilities:
-  - generic
-  category: Generic
+  capabilities: capas
   firmware: 1.7.99-powerstripg4prod1
   firmware_id: 20250819-150404/ga0def2d
   gen: 4
   id: shellypstripg4-98a3167b61a0
   ip: 192.168.2.46
-  last_seen: '2025-12-31T12:01:41'
+  last_seen: '2026-01-02T17:44:28'
   mac: 98A3167B61A0
   model: S4PL-00416EU
   name: null

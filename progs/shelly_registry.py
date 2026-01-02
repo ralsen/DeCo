@@ -21,6 +21,7 @@ from pprint import pprint
 
 
 import config
+from registry import registry as reg
 from ShellyPlus4PM import ShellyPlus4PM
 from ShellyPlus1 import ShellyPlus1
 from ShellyPlusPlug import ShellyPlusPlug
@@ -49,7 +50,7 @@ class ShellyListener(ServiceListener):
 
     def add_service(self, zeroconf, service_type, name):
         info = zeroconf.get_service_info(service_type, name)
-        if info and "shelly" in name.lower():
+        if info:
             if not info:
                 logger.debug("mDNS service without info: %s", name)
                 return
@@ -65,9 +66,11 @@ class ShellyListener(ServiceListener):
                 logger.info("mDNS found Shelly at %s (%s)", ip, name)
 
     def update_service(self, zeroconf, service_type, name):
+        logger.debug("### mDNS service updated: ### %s", name)
         pass
 
     def remove_service(self, zeroconf, service_type, name):
+        logger.debug("### mDNS service removed ###: %s", name)
         pass
 
 
