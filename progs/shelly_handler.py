@@ -24,10 +24,12 @@ HTTP_TIMEOUT = 2.0       # HTTP-Timeout pro Gerät
 # ---------------------------------------------------------------------------
 
 class ShellyHandler():
-    def __init__(self, cfg):
+    def __init__(self, cfg, devs, service):
         self.cfg = cfg  
+        self.devs = devs
+        self.service = service
 
-    def _query_shelly(self, ip: str):
+    def query_shelly(self, ip: str):
         try:
             logger.debug("Query Shelly at %s", ip)
             

@@ -23,7 +23,7 @@ pathes:
     PROG: '/prog'
     HTML: '/html'
     IPAdr: '/IPAdr'
-    REG: '/yml/shelly_registry.yml'
+    REG: '/reg'
 
 DeSeTask:
     Linux:

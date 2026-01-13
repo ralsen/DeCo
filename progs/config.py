@@ -46,7 +46,8 @@ class InitManager:
         ini['RRDPath'] = RootPath + confyml['pathes']['RRD']
         ini['YMLPath'] = RootPath + confyml['pathes']['YML']
         ini['PNGPath'] = RootPath + confyml['pathes']['PNG']
-        ini['REGFile'] = Path(RootPath + confyml['pathes']['REG'])
+        ini['REGPath'] = RootPath + confyml['pathes']['REG']
+        #ini['REGFile'] = Path(RootPath + confyml['pathes']['REG'])
         ini['DeSePort'] = confyml['Communication']['DevServerPort']
         ini['DeSeName'] = confyml['Communication']['DevServerName']
         ini['debugdatefmt'] = confyml['debug']['datefmt']

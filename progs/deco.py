@@ -10,8 +10,9 @@ import threading
 
 import config
 from shelly_handler import ShellyHandler
+from ESP_handler import ESPHandler
 from registry import registry
-
+from html_parser import parse_ESP
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 DISCOVERY_TIME = 5.0      # Sekunden für mDNS-Sammlung
-HTTP_TIMEOUT = 2.0       # HTTP-Timeout pro Gerät
+HTTP_TIMEOUT = 5.0       # HTTP-Timeout pro Gerät
 
 # ---------------------------------------------------------------------------
 # mDNS Listener
@@ -28,7 +29,8 @@ HTTP_TIMEOUT = 2.0       # HTTP-Timeout pro Gerät
 
 class DevListener(ServiceListener):
     def __init__(self):
-        self.ips = set()
+        self.devinfo = {}
+        self.service = {}
         self._lock = threading.Lock()
 
     def add_service(self, zeroconf, service_type, name):
@@ -45,7 +47,8 @@ class DevListener(ServiceListener):
 
             with self._lock:
                 ip = addresses[0]
-                self.ips.add(ip)
+                self.devinfo[info.server.replace(".local.", "")] = (ip, info.name)
+                self.service[info.server.replace(".local.", "")] = info
                 logger.info("mDNS found device at %s (%s)", ip, name)
 
     def update_service(self, zeroconf, service_type, name):
@@ -70,6 +73,9 @@ def discover_devices() -> dict:
     time.sleep(DISCOVERY_TIME)
     zeroconf.close()
 
+    logger.info(f"Discovery complete: {len(listener.devinfo)} devices found.")
+    return listener.devinfo, listener.service
+
     found = {}
 
     for ip in listener.ips:
@@ -91,10 +97,22 @@ if __name__ == "__main__":
 
     cfg = config.InitManager(current_file_name).ini
 
-    sh = ShellyHandler(cfg)
+    devs, service = discover_devices()
+    shy = ShellyHandler(cfg, devs, service)
+    esp = ESPHandler(cfg,devs, service)
     reg = registry(cfg)
-    devs = discover_devices()
-    registry = reg.update_registry(devs)
+    registry = reg.update_registry(devs, service)
+
+    print(esp.query_esp())
+    
+    for dev, key in registry.items():
+        if "shelly" in key["model"].lower():
+            shelly = sh.query_shelly(key['data'][0])
+            #data = shelly.read_all()
+            #dev[1]["capabilities"] = shelly.get_capabilities(data)
+        else:
+            parse_ESP(key['data'][0])
+            
 
     print("                                    Device discovery scan")
     print("Name                                State   Model                Capabilities             Category")
