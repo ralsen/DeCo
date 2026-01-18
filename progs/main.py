@@ -6,7 +6,8 @@ async def main():
     scanner = NetworkScanner("192.168.2.0/24")
     
     # 1. Nur die IPs holen
-    ips = scanner.discover_ips()
+    print(f"--- Starte Discovery in 192.168.2.0/24 ---") #{self.target_network} 
+    ips = scanner.discover_network()
     #print(f"Gefundene IPs: {ips}")
 
     # Hier könntest du jetzt manuell IPs hinzufügen oder entfernen
