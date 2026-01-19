@@ -4,22 +4,36 @@ import subprocess
 from scapy.all import ARP, Ether, srp
 from zeroconf import Zeroconf, ServiceBrowser, ServiceListener
 import httpx
+import threading
+import time
+
+from shelly_handler import ShellyHandler
+from html_parser import parse_ESP
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Konfiguration
+# ---------------------------------------------------------------------------
+
+DISCOVERY_TIME = 5.0      # Sekunden für mDNS-Sammlung
+HTTP_TIMEOUT = 5.0       # HTTP-Timeout pro Gerät
+
 class NetworkScanner:
-    def __init__(self, target_network, method="ARP"):
+    def __init__(self, cfg, target_network, method="ARP"):
         self.target_network = target_network
         self.active_ips = []
         self.method = method
+        self.cfg = cfg
+        self.sh = ShellyHandler(cfg)
 
     def discover_network(self):
         if self.method == "ARP":
             return self.discover_ips()
         elif self.method == "ZCP":
-            return self.discover_zeroconf_devices()
+            return self.discover_zeroconf_ips()
         logger.error(f"Unbekannte Scan-Methode: {self.method}")
-        return []   
+        return {}   
         
     def discover_ips(self):
         from scapy.all import conf # Importiere die Config zum Prüfen
@@ -47,8 +61,10 @@ class NetworkScanner:
                 logger.error(f"Fehler: {e}")
 
         self.active_ips = list(found_ips)
+        #self.discover_devices(self.active_ips)
         return self.active_ips
-    def discover_zeroconf_devices() -> dict:
+    
+    def discover_zeroconf_ips(self) -> dict:
         logger.debug("Starting mDNS discovery")
 
         zeroconf = Zeroconf()
@@ -78,7 +94,7 @@ class NetworkScanner:
             resp = await client.get(f"http://{ip}/rpc/Shelly.GetDeviceInfo", timeout=1.2)
             if resp.status_code == 200:
                 data = resp.json()
-                return {"ip": ip, "type": "Shelly", "gen": 2, "model": data.get("model")}
+                return {"ip": ip, "Device": "Shelly", "Type": "N/A", "model": data.get("model")}
         except: pass
 
         # --- Profil: Shelly Gen 1 ---
@@ -86,23 +102,25 @@ class NetworkScanner:
             resp = await client.get(f"http://{ip}/shelly", timeout=1.0)
             if resp.status_code == 200:
                 data = resp.json()
-                return {"ip": ip, "type": "Shelly", "gen": 1, "model": data.get("type")}
+                return {"ip": ip, "Device": "Shelly", "Type": "N/A", "model": data.get("type")}
         except: pass
 
         # --- Profil: WLED ---
         try:
             resp = await client.get(f"http://{ip}/json/state", timeout=1.0)
             if resp.status_code == 200:
-                return {"ip": ip, "type": "WLED", "gen": "N/A", "model": "ESP-Light"}
+                return {"ip": ip, "Device": "WLED", "Type": "N/A", "model": "ESP-Light"}
         except: pass
 
         try:
             resp = await client.get(f"http://{ip}/status", timeout=1.0)
             if resp.status_code == 200:
-                return {"ip": ip, "type": "ESP", "gen": "N/A", "model": "ESP-Device"}
+                info = parse_ESP(ip)
+                print(info)
+                return {"ip": ip, "Device": "ESP", "Type": info.get("Type"), "model": info.get("Hardw")}
         except: pass
 
-        return {"ip": ip, "type": "Unbekannt", "gen": "N/A", "model": "N/A"}
+        return {"ip": ip, "Device": "unknown", "Type": "N/A", "model": "N/A"}
 
     async def run_full_scan(self):
         """Koordiniert beide Schritte."""

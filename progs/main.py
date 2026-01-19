@@ -1,9 +1,10 @@
 import asyncio
 from network_scanner import NetworkScanner
 import httpx
+import threading
 
 async def main():
-    scanner = NetworkScanner("192.168.2.0/24")
+    scanner = NetworkScanner(cfg, "192.168.2.0/24")
     
     # 1. Nur die IPs holen
     print(f"--- Starte Discovery in 192.168.2.0/24 ---") #{self.target_network} 

@@ -6,7 +6,9 @@ import time
 import logging 
 import os
 import threading
-
+import asyncio
+from network_scanner import NetworkScanner
+import httpx
 
 import config
 from shelly_handler import ShellyHandler
@@ -87,6 +89,29 @@ def discover_devices() -> dict:
     logger.info("Discovery complete: %d devices found.", len(found))
     return found
 
+
+async def main(cfg):
+    scanner = NetworkScanner(cfg, "192.168.2.0/24")
+    
+    # 1. Nur die IPs holen
+    print(f"--- Starte Discovery in 192.168.2.0/24 ---") #{self.target_network} 
+    ips = scanner.discover_network()
+    #print(f"Gefundene IPs: {ips}")
+
+    # Hier könntest du jetzt manuell IPs hinzufügen oder entfernen
+    # z.B. ips.remove("192.168.1.1") # Router ignorieren
+
+    # 2. Die Liste abarbeiten
+    if ips:
+        async with httpx.AsyncClient() as client:
+            tasks = [scanner.identify_device(ip, client) for ip in ips]
+            devices = await asyncio.gather(*tasks)
+            
+            print("     Device discovery scan")
+            for d in devices:
+                print(f"{d['ip']:<15} | {d['Device']:<10} | {d['model']}")
+        print(f"dicovered devices: {len(ips)}")
+
 # ---------------------------------------------------------------------------
 # Testlauf
 # ---------------------------------------------------------------------------
@@ -97,6 +122,9 @@ if __name__ == "__main__":
 
     cfg = config.InitManager(current_file_name).ini
 
+    asyncio.run(main(cfg))
+    
+"""    
     devs, service = discover_devices()
     shy = ShellyHandler(cfg, devs, service)
     esp = ESPHandler(cfg,devs, service)
@@ -140,3 +168,4 @@ if __name__ == "__main__":
     #shelly2 = ShellyPlusPlug("192.168.2.50")
     #data2 = shelly2.read_all()
     #pprint(data)
+"""
