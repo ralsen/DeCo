@@ -91,7 +91,7 @@ def discover_devices() -> dict:
 
 
 async def main(cfg):
-    scanner = NetworkScanner(cfg, "192.168.2.0/24")
+    scanner = NetworkScanner(cfg)
     
     # 1. Nur die IPs holen
     print(f"--- Starte Discovery in 192.168.2.0/24 ---") #{self.target_network} 

@@ -65,6 +65,7 @@ class InitManager:
         ini['System'] = system
         ini['ProgramName'] = self.progname
         ini['Tasks'] = confyml['DeSeTask'][system]
+        ini['TargetNet'] = confyml['Communication']['TargetNet']
         
         logging.basicConfig(
             level=getattr(logging, confyml['misc']["loglevel"].upper(), logging.INFO), # INFO is default  

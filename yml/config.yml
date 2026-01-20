@@ -46,6 +46,7 @@ Communication:
     DevServerName: 'Server64.local'    
     DevServerPort: 8080
     DaBoServerPort: 8088
+    TargetNet: "192.168.2.0/24"
 
 DevServer:
     Timers:

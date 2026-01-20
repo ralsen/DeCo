@@ -20,12 +20,12 @@ DISCOVERY_TIME = 5.0      # Sekunden für mDNS-Sammlung
 HTTP_TIMEOUT = 5.0       # HTTP-Timeout pro Gerät
 
 class NetworkScanner:
-    def __init__(self, cfg, target_network, method="ARP"):
-        self.target_network = target_network
-        self.active_ips = []
+    def __init__(self, cfg, method="ARP"):
         self.method = method
         self.cfg = cfg
+        self.target_network = cfg['TargetNet']
         self.sh = ShellyHandler(cfg)
+        self.active_ips = []
 
     def discover_network(self):
         if self.method == "ARP":
