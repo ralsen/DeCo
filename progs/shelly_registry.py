@@ -20,7 +20,7 @@ from datetime import datetime
 from pprint import pprint
 
 
-import config
+import progs.config as config
 from registry import registry as reg
 from ShellyPlus4PM import ShellyPlus4PM
 from ShellyPlus1 import ShellyPlus1

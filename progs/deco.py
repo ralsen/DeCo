@@ -10,7 +10,7 @@ import asyncio
 from network_scanner import NetworkScanner
 import httpx
 
-import config
+import config as config
 from shelly_handler import ShellyHandler
 from ESP_handler import ESPHandler
 from registry import registry
