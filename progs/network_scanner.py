@@ -11,7 +11,8 @@ from shelly_handler import ShellyHandler
 from html_parser import parse_ESP
 
 logger = logging.getLogger(__name__)
-
+logging.getLogger("scapy.runtime").setLevel(logging.WARNING)
+logging.getLogger("scapy.loading").setLevel(logging.WARNING)
 # ---------------------------------------------------------------------------
 # Konfiguration
 # ---------------------------------------------------------------------------
@@ -52,7 +53,7 @@ class NetworkScanner:
         for i in range(3):
             try:
                 # Sende das Paket und achte auf die Statistik
-                ans, unans = srp(packet, timeout=2, verbose=True) # verbose=True zeigt Paket-Statistik!
+                ans, unans = srp(packet, timeout=2, verbose=False) # verbose=True zeigt Paket-Statistik!
                 logger.debug(f"Versuch {i+1}: {len(ans)} Antworten erhalten.")
                 
                 for _, received in ans:

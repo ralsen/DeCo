@@ -2,7 +2,7 @@ misc:
     humanTimestamp: True
     test_webserver: False
     do_graphics: True
-    loglevel: 'INFO'  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    loglevel: 'DEBUG'  # DEBUG, INFO, WARNING, ERROR, CRITICAL
     
 Timers:
     SystemMonitorSleep: 10

@@ -17,6 +17,8 @@ from registry import registry
 from html_parser import parse_ESP
 
 logger = logging.getLogger(__name__)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # ---------------------------------------------------------------------------
 # Konfiguration
@@ -94,7 +96,7 @@ async def main(cfg):
     scanner = NetworkScanner(cfg)
     
     # 1. Nur die IPs holen
-    print(f"--- Starte Discovery in 192.168.2.0/24 ---") #{self.target_network} 
+    logger.info(f"--- Starte Discovery in 192.168.2.0/24 ---") #{self.target_network} 
     ips = scanner.discover_network()
     #print(f"Gefundene IPs: {ips}")
 
