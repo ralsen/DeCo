@@ -11,24 +11,24 @@ class ThreadManager:
 
     def start(self, name: str, target: callable, args: tuple = (), kwargs: dict = None):
         if name in self._threads:
-            logger.info(f"Thread '{name}' already running.")
+            logger.debug(f"Thread '{name}' already running.")
             return
 
         t = StoppableThread(target=target, name=name, args=args, kwargs=kwargs)
         t.start()
         self._threads[name] = t
-        logger.info(f"Thread '{name}' started.")
+        logger.debug(f"Thread '{name}' started.")
 
     def stop(self, name: str):
         thread = self._threads.get(name)
         if thread:
-            logger.info(f"Stopping thread '{name}' (externally triggered).")
+            logger.debug(f"Stopping thread '{name}' (externally triggered).")
             thread.stop()
             thread.join(timeout=5)
             if thread.is_alive():
                 logger.warning(f"Thread '{name}' did not terminate cleanly..")
             else:
-                logger.info(f"Thread '{name}' stopped")
+                logger.debug(f"Thread '{name}' stopped")
             del self._threads[name]
 
     def stop_all(self):
@@ -48,5 +48,5 @@ class ThreadManager:
     def cleanup_finished(self):
         finished = [name for name, t in self._threads.items() if not t.is_alive()]
         for name in finished:
-            logger.info(f"Thread '{name}' has finished.")
+            logger.debug(f"Thread '{name}' has finished.")
             del self._threads[name]

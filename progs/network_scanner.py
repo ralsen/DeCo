@@ -117,8 +117,15 @@ class NetworkScanner:
             resp = await client.get(f"http://{ip}/status", timeout=1.0)
             if resp.status_code == 200:
                 info = parse_ESP(ip)
-                print(info)
-                return {"ip": ip, "Device": "ESP", "Type": info.get("Type"), "model": info.get("Hardw")}
+                logger.debug(f"ESP-Gerät gefunden: {info}")
+                return {"ip": ip,
+                        "Hostname": info.get("Hostname"), 
+                        "Device": "ESP", 
+                        "Type": info.get("Type"), 
+                        "model": info.get("Hardw"),
+                        "uptime": info.get("uptime"),
+                        "good Transmissions": info.get("good Transmissions"),
+                        "bad Transmissions": info.get("bad Transmissions")}
         except: pass
 
         return {"ip": ip, "Device": "unknown", "Type": "N/A", "model": "N/A"}

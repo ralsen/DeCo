@@ -53,7 +53,7 @@ class DevListener(ServiceListener):
                 ip = addresses[0]
                 self.devinfo[info.server.replace(".local.", "")] = (ip, info.name)
                 self.service[info.server.replace(".local.", "")] = info
-                logger.info("mDNS found device at %s (%s)", ip, name)
+                logger.debug("mDNS found device at %s (%s)", ip, name)
 
     def update_service(self, zeroconf, service_type, name):
         logger.debug("### mDNS service updated: ### %s", name)
@@ -109,10 +109,10 @@ async def main(cfg):
             tasks = [scanner.identify_device(ip, client) for ip in ips]
             devices = await asyncio.gather(*tasks)
             
-            print("     Device discovery scan")
+            logger.debug("     Device discovery scan")
             for d in devices:
-                print(f"{d['ip']:<15} | {d['Device']:<10} | {d['model']}")
-        print(f"dicovered devices: {len(ips)}")
+                logger.debug(f"{d['ip']:<15} | {d['Device']:<10} | {d['model']}")
+        logger.info(f"dicovered devices: {len(ips)}")
 
 # ---------------------------------------------------------------------------
 # Testlauf
